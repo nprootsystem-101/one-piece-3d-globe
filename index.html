@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>One Piece World Globe — Interactive 3D Map</title>
+  <meta name="description" content="Explore the world of One Piece in stunning 3D. Navigate the Grand Line, Red Line, Four Blues, and discover every island from the manga.">
+  <meta name="keywords" content="One Piece, World Map, 3D Globe, Grand Line, Red Line, Interactive Map, Anime">
+
+  <!-- Preconnect for performance -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Favicon (skull & crossbones emoji as SVG) -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏴‍☠️</text></svg>">
+</head>
+<body>
+
+  <!-- ============================================================
+       LOADING SCREEN
+       ============================================================ -->
+  <div id="loading-screen">
+    <div class="loading-compass"></div>
+    <div class="title">One Piece World</div>
+    <div class="subtitle">Charting the Grand Line…</div>
+    <div class="loading-spinner"></div>
+  </div>
+
+  <!-- ============================================================
+       3D CANVAS
+       ============================================================ -->
+  <div id="canvas-container">
+    <canvas id="globe-canvas"></canvas>
+  </div>
+
+  <!-- ============================================================
+       HOVER TOOLTIP
+       ============================================================ -->
+  <div id="hover-tooltip"></div>
+
+  <!-- ============================================================
+       TOP BAR — Logo + Search + Controls
+       ============================================================ -->
+  <div id="top-bar" class="ui-overlay">
+    <!-- Logo -->
+    <div class="logo">
+      <div class="logo-icon">🏴‍☠️</div>
+      <span class="logo-text">One Piece World</span>
+    </div>
+
+    <!-- Search -->
+    <div id="search-container">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="search-input" placeholder="Search islands, locations…" autocomplete="off">
+      <div id="search-results"></div>
+    </div>
+
+    <!-- Control Buttons -->
+    <div id="controls-bar">
+      <button class="control-btn active" id="btn-rotate" title="Toggle auto-rotation">🔄</button>
+      <button class="control-btn" id="btn-reset" title="Reset camera view">🏠</button>
+      <button class="control-btn" id="btn-sidebar" title="Toggle legend panel">📋</button>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       SIDEBAR — Legend & Stats
+       ============================================================ -->
+  <div id="sidebar">
+    <!-- Legend Panel -->
+    <div class="sidebar-panel">
+      <div class="panel-header">
+        <span class="panel-title">Legend</span>
+      </div>
+      <div class="panel-content">
+        <ul class="legend-list">
+          <li class="legend-item">
+            <span class="legend-color redline"></span>
+            <span>Red Line — Continental Wall</span>
+          </li>
+          <li class="legend-item">
+            <span class="legend-color grandline"></span>
+            <span>Grand Line — The Pirate's Route</span>
+          </li>
+          <li class="legend-item">
+            <span class="legend-color calmbelt"></span>
+            <span>Calm Belt — Windless Sea</span>
+          </li>
+          <li class="legend-item">
+            <span class="legend-color eastblue"></span>
+            <span>East Blue</span>
+          </li>
+          <li class="legend-item">
+            <span class="legend-color westblue"></span>
+            <span>West Blue</span>
+          </li>
+          <li class="legend-item">
+            <span class="legend-color northblue"></span>
+            <span>North Blue</span>
+          </li>
+          <li class="legend-item">
+            <span class="legend-color southblue"></span>
+            <span>South Blue</span>
+          </li>
+          <li class="legend-item">
+            <span class="legend-color island"></span>
+            <span>Islands & Locations</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Stats Panel -->
+    <div class="sidebar-panel">
+      <div class="panel-header">
+        <span class="panel-title">World Stats</span>
+      </div>
+      <div class="panel-content">
+        <div class="stats-grid">
+          <div class="stat-item">
+            <div class="stat-value">4</div>
+            <div class="stat-label">Seas</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">2</div>
+            <div class="stat-label">Grand Line Halves</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">40+</div>
+            <div class="stat-label">Islands</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">∞</div>
+            <div class="stat-label">Adventure</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       ISLAND INFO POPUP
+       ============================================================ -->
+  <div id="island-info">
+    <div class="info-accent-bar"></div>
+    <button class="info-close" id="info-close">✕</button>
+    <div class="info-body">
+      <div id="info-name" class="info-name"></div>
+      <div id="info-name-jp" style="font-size:0.75rem; color:var(--text-muted); margin-bottom:6px;"></div>
+      <div class="info-region">
+        <span class="region-dot" id="info-region-dot"></span>
+        <span id="info-region-text"></span>
+      </div>
+      <p id="info-description" class="info-description"></p>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       BOTTOM BAR — Region Filter Chips
+       ============================================================ -->
+  <div id="bottom-bar" class="ui-overlay">
+    <button class="region-chip active" data-region="all">All Regions</button>
+    <button class="region-chip" data-region="eastblue">East Blue</button>
+    <button class="region-chip" data-region="westblue">West Blue</button>
+    <button class="region-chip" data-region="northblue">North Blue</button>
+    <button class="region-chip" data-region="southblue">South Blue</button>
+    <button class="region-chip" data-region="paradise">Paradise</button>
+    <button class="region-chip" data-region="newworld">New World</button>
+  </div>
+
+  <!-- ============================================================
+       ZOOM CONTROLS
+       ============================================================ -->
+  <div id="zoom-controls">
+    <button class="zoom-btn" id="zoom-in" title="Zoom in">+</button>
+    <div class="zoom-divider"></div>
+    <button class="zoom-btn" id="zoom-out" title="Zoom out">−</button>
+    <div class="zoom-divider"></div>
+    <button class="zoom-btn" id="zoom-reset" title="Reset view">⌂</button>
+  </div>
+
+  <!-- ============================================================
+       THREE.JS IMPORT MAP + MODULE SCRIPT
+       ============================================================ -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.162.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.162.0/examples/jsm/"
+    }
+  }
+  </script>
+
+  <!-- Safety: always hide loading screen after 8 seconds even if JS errors -->
+  <script>
+    window.addEventListener('error', function() {
+      setTimeout(function() {
+        var ls = document.getElementById('loading-screen');
+        if (ls) ls.classList.add('fade-out');
+      }, 500);
+    });
+    setTimeout(function() {
+      var ls = document.getElementById('loading-screen');
+      if (ls && !ls.classList.contains('fade-out')) {
+        ls.classList.add('fade-out');
+        console.warn('Loading screen force-hidden after timeout');
+      }
+    }, 8000);
+  </script>
+
+  <script type="module" src="app.js"></script>
+
+</body>
+</html>
